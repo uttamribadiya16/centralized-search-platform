@@ -1,0 +1,43 @@
+version: '3.8'
+
+# Development overrides for docker-compose.yml
+services:
+  account-service-backend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+    volumes:
+      - ./account-service/backend:/app/src
+    ports:
+      - "5001:5001"
+
+  account-service-frontend:
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:5001/api
+    volumes:
+      - ./account-service/frontend/src:/app/src
+      - ./account-service/frontend/public:/app/public
+
+  offer-service-backend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+    volumes:
+      - ./offer-service/backend/OfferService.API:/app/src
+
+  offer-service-frontend:
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:5002/api
+      - REACT_APP_ACCOUNT_API_URL=http://localhost:5001/api
+    volumes:
+      - ./offer-service/frontend/src:/app/src
+      - ./offer-service/frontend/public:/app/public
+
+  sqlserver:
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./scripts/sql:/scripts

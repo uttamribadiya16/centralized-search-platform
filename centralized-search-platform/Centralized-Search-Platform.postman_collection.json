@@ -1,0 +1,710 @@
+{
+	"info": {
+		"_postman_id": "12345678-abcd-efgh-ijkl-123456789012",
+		"name": "Centralized Search Platform",
+		"description": "Complete API collection for the Centralized Search Platform with Account Service, Offer Service, Search Service, and Elasticsearch endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account Service",
+			"item": [
+				{
+					"name": "Register Seller",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"phoneNumber\": \"+1234567890\",\n  \"address\": \"123 Main St, City, State 12345\"\n}"
+						},
+						"url": {
+							"raw": "{{ACCOUNT_SERVICE_URL}}/api/account/register",
+							"host": [
+								"{{ACCOUNT_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"account",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"AUTH_TOKEN\", jsonData.token);",
+									"    pm.environment.set(\"USER_ID\", jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{ACCOUNT_SERVICE_URL}}/api/account/login",
+							"host": [
+								"{{ACCOUNT_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"account",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{ACCOUNT_SERVICE_URL}}/api/account/profile",
+							"host": [
+								"{{ACCOUNT_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"account",
+								"profile"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Offer Service",
+			"item": [
+				{
+					"name": "Create Offer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerId\": \"{{USER_ID}}\",\n  \"make\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"mileage\": 25000,\n  \"condition\": \"Good\",\n  \"offerAmount\": 18500.00,\n  \"description\": \"Well-maintained Toyota Camry with low mileage\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Offers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers?page=1&pageSize=10&sortBy=createdAt&sortDirection=desc",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortDirection",
+									"value": "desc"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Offers by Seller",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers/seller/{{USER_ID}}?page=1&pageSize=10",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"seller",
+								"{{USER_ID}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Offer by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers/{{OFFER_ID}}",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"{{OFFER_ID}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Offer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"make\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"mileage\": 26000,\n  \"condition\": \"Excellent\",\n  \"offerAmount\": 19000.00,\n  \"description\": \"Updated: Well-maintained Toyota Camry with excellent condition\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers/{{OFFER_ID}}",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"{{OFFER_ID}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Offer",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers/{{OFFER_ID}}",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"{{OFFER_ID}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Seller Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{OFFER_SERVICE_URL}}/api/offers/seller/{{USER_ID}}/stats",
+							"host": [
+								"{{OFFER_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"seller",
+								"{{USER_ID}}",
+								"stats"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Search Service",
+			"item": [
+				{
+					"name": "Search Offers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{SEARCH_SERVICE_URL}}/api/search/offers?q=Toyota&sellerId={{USER_ID}}&page=1&pageSize=10",
+							"host": [
+								"{{SEARCH_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"offers"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Toyota",
+									"description": "Search query"
+								},
+								{
+									"key": "sellerId",
+									"value": "{{USER_ID}}",
+									"description": "Seller ID filter"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "make",
+									"value": "Toyota",
+									"description": "Filter by make",
+									"disabled": true
+								},
+								{
+									"key": "model",
+									"value": "Camry",
+									"description": "Filter by model",
+									"disabled": true
+								},
+								{
+									"key": "year",
+									"value": "2020",
+									"description": "Filter by year",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "Active",
+									"description": "Filter by status",
+									"disabled": true
+								},
+								{
+									"key": "minPrice",
+									"value": "15000",
+									"description": "Minimum price",
+									"disabled": true
+								},
+								{
+									"key": "maxPrice",
+									"value": "25000",
+									"description": "Maximum price",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Search Suggestions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{SEARCH_SERVICE_URL}}/api/search/suggestions?q=Toy&sellerId={{USER_ID}}",
+							"host": [
+								"{{SEARCH_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"suggestions"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Toy"
+								},
+								{
+									"key": "sellerId",
+									"value": "{{USER_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Search Filters",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{SEARCH_SERVICE_URL}}/api/search/filters?sellerId={{USER_ID}}",
+							"host": [
+								"{{SEARCH_SERVICE_URL}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"filters"
+							],
+							"query": [
+								{
+									"key": "sellerId",
+									"value": "{{USER_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Elasticsearch Direct",
+			"item": [
+				{
+					"name": "Get All Offers from Index",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": {\n    \"match_all\": {}\n  },\n  \"size\": 100\n}"
+						},
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers/_search",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers",
+								"_search"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Offers Index Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Index Mapping",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers/_mapping",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers",
+								"_mapping"
+							]
+						}
+					}
+				},
+				{
+					"name": "Count Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers/_count",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers",
+								"_count"
+							]
+						}
+					}
+				},
+				{
+					"name": "Search by Seller ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": {\n    \"term\": {\n      \"sellerId\": \"{{USER_ID}}\"\n    }\n  },\n  \"size\": 50\n}"
+						},
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers/_search",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers",
+								"_search"
+							]
+						}
+					}
+				},
+				{
+					"name": "Search by Make and Model",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": {\n    \"bool\": {\n      \"must\": [\n        {\n          \"match\": {\n            \"make\": \"Toyota\"\n          }\n        },\n        {\n          \"match\": {\n            \"model\": \"Camry\"\n          }\n        }\n      ]\n    }\n  },\n  \"size\": 50\n}"
+						},
+						"url": {
+							"raw": "{{ELASTICSEARCH_URL}}/offers/_search",
+							"host": [
+								"{{ELASTICSEARCH_URL}}"
+							],
+							"path": [
+								"offers",
+								"_search"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "RabbitMQ Management",
+			"item": [
+				{
+					"name": "Get Queue Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic YWRtaW46YWRtaW4xMjM=",
+								"description": "Basic auth for admin:admin123"
+							}
+						],
+						"url": {
+							"raw": "{{RABBITMQ_MANAGEMENT_URL}}/api/queues",
+							"host": [
+								"{{RABBITMQ_MANAGEMENT_URL}}"
+							],
+							"path": [
+								"api",
+								"queues"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Exchange Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic YWRtaW46YWRtaW4xMjM=",
+								"description": "Basic auth for admin:admin123"
+							}
+						],
+						"url": {
+							"raw": "{{RABBITMQ_MANAGEMENT_URL}}/api/exchanges",
+							"host": [
+								"{{RABBITMQ_MANAGEMENT_URL}}"
+							],
+							"path": [
+								"api",
+								"exchanges"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "ACCOUNT_SERVICE_URL",
+			"value": "http://localhost:5001",
+			"type": "string"
+		},
+		{
+			"key": "OFFER_SERVICE_URL",
+			"value": "http://localhost:5002",
+			"type": "string"
+		},
+		{
+			"key": "SEARCH_SERVICE_URL",
+			"value": "http://localhost:5003",
+			"type": "string"
+		},
+		{
+			"key": "ELASTICSEARCH_URL",
+			"value": "http://localhost:9200",
+			"type": "string"
+		},
+		{
+			"key": "RABBITMQ_MANAGEMENT_URL",
+			"value": "http://localhost:15672",
+			"type": "string"
+		},
+		{
+			"key": "AUTH_TOKEN",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "USER_ID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "OFFER_ID",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
