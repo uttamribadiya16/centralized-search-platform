@@ -15,8 +15,8 @@ const LoginPage = ({ onLogin }) => {
     try {
       const response = await apiService.loginCarrier(email, password);
       
-      if (response && response.id) {
-        onLogin(response);
+      if (response && response.user && response.user.id) {
+        onLogin(response.user);
       } else {
         setError('Login failed. Invalid response from server.');
       }
