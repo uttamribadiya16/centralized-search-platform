@@ -1,0 +1,69 @@
+### Purchase Service API - HTTP Client
+
+# Login as buyer
+POST http://localhost:5003/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "buyer@example.com"
+}
+
+###
+
+# Validate buyer
+GET http://localhost:5003/api/auth/validate/{{buyerId}}
+
+###
+
+# Get available offers
+GET http://localhost:5003/api/offers?page=1&pageSize=10
+
+###
+
+# Get specific offer
+GET http://localhost:5003/api/offers/{{offerId}}
+
+###
+
+# Get all purchases
+GET http://localhost:5003/api/purchases?page=1&pageSize=10
+
+###
+
+# Get purchases by buyer
+GET http://localhost:5003/api/purchases/buyer/{{buyerId}}?page=1&pageSize=10
+
+###
+
+# Get specific purchase
+GET http://localhost:5003/api/purchases/{{purchaseId}}
+
+###
+
+# Create purchase
+POST http://localhost:5003/api/purchases/buyer/{{buyerId}}
+Content-Type: application/json
+
+{
+  "offerId": "{{offerId}}",
+  "purchaseAmount": 25000.00,
+  "notes": "Interested in this vehicle"
+}
+
+###
+
+# Update purchase
+PUT http://localhost:5003/api/purchases/{{purchaseId}}
+Content-Type: application/json
+
+{
+  "status": 2,
+  "notes": "Purchase confirmed"
+}
+
+###
+
+# Delete purchase
+DELETE http://localhost:5003/api/purchases/{{purchaseId}}
+
+###
