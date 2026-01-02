@@ -54,8 +54,7 @@ bld/
 # Docker
 .dockerignore
 
-# Environment Variables
-.env
+# Environment Variabless
 .env.local
 .env.development
 .env.test
