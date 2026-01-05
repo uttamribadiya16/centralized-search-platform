@@ -19,9 +19,13 @@ const Search = () => {
   useEffect(() => {
     // Load initial results (all seller's offers)
     if (currentUser?.id) {
-      handleSearch('', 1, false);
+      handleSearch('', 1, true); // Set hasSearched to true for initial load
     }
   }, []);
+
+  useEffect(() => {
+    console.log('Search component re-rendered. searchResults:', searchResults);
+  }, [searchResults]);
 
   const handleSearch = async (searchTerm = searchText, page = 1, updateSearched = true) => {
     if (!currentUser?.id) {
@@ -44,10 +48,16 @@ const Search = () => {
         pageSize
       );
 
-      setSearchResults(response.results || []);
+      console.log('Full API response:', response);
+      const results = response.offerResults || [];
+      console.log('Extracted results:', results);
+      console.log('Results length:', results.length);
+      
+      setSearchResults(results);
       setTotalPages(response.totalPages || 0);
       setTotalCount(response.totalCount || 0);
       setCurrentPage(page);
+      
     } catch (error) {
       console.error('Search failed:', error);
       setError('Failed to search offers. Please try again.');
@@ -152,97 +162,104 @@ const Search = () => {
         </div>
       )}
 
-      {!isLoading && hasSearched && searchResults.length === 0 && (
-        <div className="empty-state">
-          <div className="empty-state-icon">🔍</div>
-          <h3>No offers found</h3>
-          {searchText ? (
-            <p>
-              No offers match your search "{searchText}". 
-              <br />Try a different search term or check your spelling.
-            </p>
-          ) : (
-            <p>
-              You haven't created any offers yet.
-              <br />Start by creating your first vehicle listing!
-            </p>
-          )}
-        </div>
-      )}
-
-      {!isLoading && searchResults.length > 0 && (
+      {!isLoading && (
         <>
-          <div className="search-results">
-            {searchResults.map((offer) => (
-              <div key={offer.id} className="search-result-card">
-                <div className="result-header">
-                  <h3 className="result-title">
-                    {offer.year} {offer.make} {offer.model}
-                  </h3>
-                  <div className={getStatusBadgeClass(offer.status)}>
-                    {offer.status || 'Unknown'}
-                  </div>
-                </div>
-                
-                <div className="result-details">
-                  <div className="result-row">
-                    <span className="result-label">VIN:</span>
-                    <span className="result-value">{offer.vin || 'Not specified'}</span>
-                  </div>
-                  
-                  <div className="result-row">
-                    <span className="result-label">Price:</span>
-                    <span className="result-value price">{formatCurrency(offer.offerAmount)}</span>
-                  </div>
-                  
-                  <div className="result-row">
-                    <span className="result-label">Condition:</span>
-                    <span className="result-value">{offer.condition || 'Not specified'}</span>
-                  </div>
-                  
-                  {offer.address && (
-                    <div className="result-row">
-                      <span className="result-label">Location:</span>
-                      <span className="result-value">{offer.address}</span>
+          {console.log('Render check - searchResults:', searchResults, 'length:', searchResults?.length)}
+          {/* Show results if we have any */}
+          {searchResults && searchResults.length > 0 ? (
+            <>
+              <div className="search-results">
+                {searchResults.map((offer) => (
+                  <div key={offer.id} className="search-result-card">
+                    <div className="result-header">
+                      <h3 className="result-title">
+                        {offer.year} {offer.make} {offer.model}
+                      </h3>
+                      <div className={getStatusBadgeClass(offer.status)}>
+                        {offer.status || 'Unknown'}
+                      </div>
                     </div>
-                  )}
-                  
-                  <div className="result-row">
-                    <span className="result-label">Created:</span>
-                    <span className="result-value">{formatDate(offer.createdAt)}</span>
+                    
+                    <div className="result-details">
+                      <div className="result-row">
+                        <span className="result-label">VIN:</span>
+                        <span className="result-value">{offer.vin || 'Not specified'}</span>
+                      </div>
+                      
+                      <div className="result-row">
+                        <span className="result-label">Price:</span>
+                        <span className="result-value price">{formatCurrency(offer.offerAmount)}</span>
+                      </div>
+                      
+                      <div className="result-row">
+                        <span className="result-label">Condition:</span>
+                        <span className="result-value">{offer.condition || 'Not specified'}</span>
+                      </div>
+                      
+                      {offer.address && (
+                        <div className="result-row">
+                          <span className="result-label">Location:</span>
+                          <span className="result-value">{offer.address}</span>
+                        </div>
+                      )}
+                      
+                      <div className="result-row">
+                        <span className="result-label">Created:</span>
+                        <span className="result-value">{formatDate(offer.createdAt)}</span>
+                      </div>
+      
+                      <div className="result-row">
+                        <span className="result-label">Updated:</span>
+                        <span className="result-value">{formatDate(offer.updatedAt)}</span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="result-row">
-                    <span className="result-label">Updated:</span>
-                    <span className="result-value">{formatDate(offer.updatedAt)}</span>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1 || isLoading}
-                className="pagination-button"
-              >
-                ← Previous
-              </button>
-              
-              <span className="pagination-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages || isLoading}
-                className="pagination-button"
-              >
-                Next →
-              </button>
-            </div>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1 || isLoading}
+                    className="pagination-button"
+                  >
+                    ← Previous
+                  </button>
+                  
+                  <span className="pagination-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages || isLoading}
+                    className="pagination-button"
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Show empty state only if we have searched and have no results */
+            hasSearched && (
+              <div className="empty-state">
+                <div className="empty-state-icon">🔍</div>
+                <h3>No offers found</h3>
+                {searchText ? (
+                  <p>
+                    No offers match your search "{searchText}". 
+                    <br />Try a different search term or check your spelling.
+                  </p>
+                ) : (
+                  <p>
+                    You haven't created any offers yet.
+                    <br />Start by creating your first vehicle listing!
+                  </p>
+                )}
+              </div>
+            )
           )}
         </>
       )}
