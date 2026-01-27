@@ -27,11 +27,13 @@ const TransportListPage = ({ currentUser }) => {
   const loadTransports = async () => {
     if (!currentUser?.id) return;
     
+    console.log('Loading transports for carrier:', currentUser.id);
     setLoading(true);
     setError('');
     
     try {
       const response = await apiService.getTransportsByCarrier(currentUser.id, searchParams);
+      console.log('Transports response:', response);
       setTransports(response.items || []);
       setTotalPages(response.totalPages || 0);
     } catch (error) {
@@ -72,30 +74,44 @@ const TransportListPage = ({ currentUser }) => {
 
   const getStatusColor = (status) => {
     const statusMap = {
-      'pending': 'pending',
-      'active': 'confirmed', 
-      'in-transit': 'in-progress',
-      'completed': 'completed',
-      'cancelled': 'cancelled'
+      1: 'pending',     // Assigned
+      2: 'confirmed',   // PickupScheduled
+      3: 'in-progress', // InTransit
+      4: 'completed',   // Delivered
+      5: 'cancelled'    // Cancelled
     };
-    return statusMap[status?.toLowerCase()] || 'pending';
+    return statusMap[status] || 'pending';
+  };
+
+  const getStatusName = (status) => {
+    const statusMap = {
+      1: 'Assigned',
+      2: 'Pickup Scheduled',
+      3: 'In Transit',
+      4: 'Delivered',
+      5: 'Cancelled'
+    };
+    return statusMap[status] || 'Unknown';
   };
 
   const getVehicleIcon = (vehicleType) => {
-    const iconMap = {
-      'truck': '🚛',
-      'van': '🚐',
-      'motorcycle': '🏍️',
-      'ship': '🚢',
-      'plane': '✈️'
-    };
-    return iconMap[vehicleType?.toLowerCase()] || '🚛';
+    // Since API doesn't return vehicleType, use generic truck icon
+    return '🚛';
   };
 
   return (
     <div className="transport-list-page">
       <h2>My Transports</h2>
       <p>Manage your transport assignments and delivery status</p>
+      
+      {/* Debug info */}
+      <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0', fontSize: '12px'}}>
+        <strong>Debug Info:</strong><br/>
+        Current User ID: {currentUser?.id}<br/>
+        Transports Count: {transports.length}<br/>
+        Loading: {loading ? 'Yes' : 'No'}<br/>
+        Error: {error || 'None'}
+      </div>
       
       {error && (
         <div className="error">
@@ -203,12 +219,13 @@ const TransportListPage = ({ currentUser }) => {
                   </h3>
                   
                   <div className="card-details">
-                    <div><strong>Route:</strong> {transport.originLocation} → {transport.destinationLocation}</div>
-                    <div><strong>Vehicle:</strong> {transport.vehicleType}</div>
-                    <div><strong>Capacity:</strong> {transport.capacity} kg</div>
+                    <div><strong>Route:</strong> {transport.pickupAddress} → {transport.deliveryAddress}</div>
+                    <div><strong>Vehicle:</strong> {transport.offerMake} {transport.offerModel} ({transport.offerYear})</div>
+                    <div><strong>VIN:</strong> {transport.offerVin}</div>
+                    <div><strong>Purchase Amount:</strong> ${transport.purchaseAmount?.toFixed(2) || 'N/A'}</div>
                     <div><strong>Status:</strong> 
                       <span className={`status-badge status-${getStatusColor(transport.status)}`}>
-                        {transport.status}
+                        {getStatusName(transport.status)}
                       </span>
                     </div>
                     <div><strong>Created:</strong> {formatDate(transport.createdAt)}</div>
@@ -221,36 +238,36 @@ const TransportListPage = ({ currentUser }) => {
                   </div>
 
                   <div className="card-actions">
-                    {transport.status === 'pending' && (
+                    {transport.status === 1 && (
                       <>
                         <button
                           className="btn btn-primary"
-                          onClick={() => handleUpdateStatus(transport.id, 'active')}
+                          onClick={() => handleUpdateStatus(transport.id, 2)}
                         >
-                          Start Transport
+                          Schedule Pickup
                         </button>
                         <button
                           className="btn btn-danger"
-                          onClick={() => handleUpdateStatus(transport.id, 'cancelled')}
+                          onClick={() => handleUpdateStatus(transport.id, 5)}
                         >
                           Cancel
                         </button>
                       </>
                     )}
                     
-                    {transport.status === 'active' && (
+                    {transport.status === 2 && (
                       <button
                         className="btn btn-primary"
-                        onClick={() => handleUpdateStatus(transport.id, 'in-transit')}
+                        onClick={() => handleUpdateStatus(transport.id, 3)}
                       >
                         Mark In Transit
                       </button>
                     )}
                     
-                    {transport.status === 'in-transit' && (
+                    {transport.status === 3 && (
                       <button
                         className="btn btn-primary"
-                        onClick={() => handleUpdateStatus(transport.id, 'completed')}
+                        onClick={() => handleUpdateStatus(transport.id, 4)}
                       >
                         Mark Delivered
                       </button>

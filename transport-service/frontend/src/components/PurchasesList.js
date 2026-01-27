@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { transportService } from '../services/api';
+import AssignModal from './AssignModal';
 
-const PurchasesList = () => {
+const PurchasesList = ({ currentUser }) => {
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,6 +10,8 @@ const PurchasesList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedPurchases, setSelectedPurchases] = useState(new Set());
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     loadPurchases();
@@ -59,8 +62,31 @@ const PurchasesList = () => {
 
   const handleAssignToTransport = () => {
     if (selectedPurchases.size > 0) {
+      // For now, assign the first selected purchase
+      const firstPurchaseId = Array.from(selectedPurchases)[0];
+      const purchase = purchases.find(p => p.id === firstPurchaseId);
+      setSelectedPurchase(purchase);
       setShowAssignModal(true);
     }
+  };
+
+  const handleAssignPurchase = (purchase) => {
+    setSelectedPurchase(purchase);
+    setShowAssignModal(true);
+  };
+
+  const handleAssignSuccess = () => {
+    setShowAssignModal(false);
+    setSelectedPurchase(null);
+    setSelectedPurchases(new Set());
+    setSuccess('Purchase assigned to transport successfully!');
+    setTimeout(() => setSuccess(''), 5000);
+    loadPurchases(); // Refresh purchases
+  };
+
+  const handleAssignCancel = () => {
+    setShowAssignModal(false);
+    setSelectedPurchase(null);
   };
 
   const getStatusBadgeClass = (status) => {
@@ -161,6 +187,18 @@ const PurchasesList = () => {
           </button>
         </div>
       </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          <i className="bi bi-check-circle me-2"></i>{success}
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setSuccess('')}
+          ></button>
+        </div>
+      )}
 
       {/* Search */}
       <div className="row mb-4">
@@ -273,6 +311,7 @@ const PurchasesList = () => {
                             <button 
                               className="btn btn-sm btn-success"
                               disabled={purchase.status === 'shipped' || purchase.status === 'completed'}
+                              onClick={() => handleAssignPurchase(purchase)}
                             >
                               <i className="bi bi-truck me-1"></i>Assign
                             </button>
@@ -290,45 +329,14 @@ const PurchasesList = () => {
         </div>
       </div>
 
-      {/* Assign Modal would go here - placeholder for now */}
-      {showAssignModal && (
-        <div className="modal d-block" tabIndex="-1" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Assign to Transport</h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => setShowAssignModal(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <p>Assign {selectedPurchases.size} selected purchase(s) to a transport route.</p>
-                <div className="alert alert-info">
-                  <i className="bi bi-info-circle me-2"></i>
-                  Transport assignment functionality will be implemented in the next phase.
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => setShowAssignModal(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={() => setShowAssignModal(false)}
-                >
-                  Assign
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Assign Modal */}
+      {showAssignModal && selectedPurchase && currentUser && (
+        <AssignModal 
+          purchase={selectedPurchase}
+          currentUser={currentUser}
+          onSuccess={handleAssignSuccess}
+          onCancel={handleAssignCancel}
+        />
       )}
     </div>
   );

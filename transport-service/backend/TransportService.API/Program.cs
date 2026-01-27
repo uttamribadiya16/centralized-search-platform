@@ -14,15 +14,26 @@ builder.Services.AddDbContext<TransportDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // HTTP Client for external services
-builder.Services.AddHttpClient<IAuthService, AuthService>();
-builder.Services.AddHttpClient<IOfferServiceClient, OfferServiceClient>();
-builder.Services.AddHttpClient<IPurchaseServiceClient, PurchaseServiceClient>();
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    var accountServiceUrl = builder.Configuration["ACCOUNT_SERVICE_URL"] ?? "http://account-service-backend:5001";
+    client.BaseAddress = new Uri(accountServiceUrl);
+});
+
+builder.Services.AddHttpClient<IOfferServiceClient, OfferServiceClient>(client =>
+{
+    var offerServiceUrl = builder.Configuration["OFFER_SERVICE_URL"] ?? "http://offer-service-backend:5002";
+    client.BaseAddress = new Uri(offerServiceUrl);
+});
+
+builder.Services.AddHttpClient<IPurchaseServiceClient, PurchaseServiceClient>(client =>
+{
+    var purchaseServiceUrl = builder.Configuration["PURCHASE_SERVICE_URL"] ?? "http://purchase-service-backend:5004";
+    client.BaseAddress = new Uri(purchaseServiceUrl);
+});
 
 // Services
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITransportService, TransportService.API.Services.TransportService>();
-builder.Services.AddScoped<IOfferServiceClient, OfferServiceClient>();
-builder.Services.AddScoped<IPurchaseServiceClient, PurchaseServiceClient>();
 builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 
 // CORS
